@@ -1,0 +1,32 @@
+<!-- 1) Dans <head> (si pas déjà présent) : -->
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<!-- 2) Où tu veux dans <body> : les boutons -->
+<div id="shop" style="display:flex;flex-direction:column;gap:8px;margin:12px 0">
+  <button onclick="buy('s')">⭐ 100 étoiles — 50 Stars</button>
+  <button onclick="buy('m')">⭐ 500 étoiles — 200 Stars</button>
+  <button onclick="buy('l')">⭐ 1500 étoiles — 500 Stars</button>
+</div>
+
+<!-- 3) Avant </body> : le script -->
+<script>
+  // Remplace par l'adresse de ton site Netlify
+  const API_URL = "https://TON-SITE.netlify.app/api";
+
+  async function buy(pack) {
+    const tg = Telegram.WebApp;
+    try {
+      const res = await fetch(`${API_URL}?pack=${pack}`);
+      const data = await res.json();
+      if (!data.link) return tg.showAlert("Paiement indisponible");
+      tg.openInvoice(data.link, (status) => {
+        if (status === "paid") {
+          addStars(data.stars); // <-- remplace par ta fonction qui ajoute des étoiles
+          tg.HapticFeedback.notificationOccurred("success");
+        }
+      });
+    } catch (e) {
+      tg.showAlert("Erreur réseau");
+    }
+  }
+</script>
