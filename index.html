@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Star Multiplier — Demo</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0d0d10;color:#f5f5f7;font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:520px;margin:30px auto;padding:16px}.game{background:#111113;border:1px solid #29292f;border-radius:28px;padding:20px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.brand{font-weight:800;font-size:19px}.balance{background:#202025;border:1px solid #303039;border-radius:15px;padding:9px 13px;font-weight:800}
+.panel{background:#19191e;border:1px solid #28282f;border-radius:22px;padding:18px;margin-top:14px}.history{display:flex;gap:8px;overflow:hidden;margin-bottom:18px}
+.pill{flex:0 0 auto;padding:7px 10px;border-radius:999px;background:#173f2a;color:#5bea8b;font-weight:750;font-size:13px}
+.bar{height:30px;border-radius:20px;background:linear-gradient(90deg,#e72e55,#ef405b 18%,#16b85a 48%,#15d85d);position:relative}
+.knob{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:43px;height:43px;border-radius:50%;background:#f5f5f7;border:7px solid #5550bd}
+.scale{display:flex;justify-content:space-between;color:#7d7d86;font-size:12px;margin-top:9px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.label{color:#85858f;font-size:13px;margin-bottom:8px}.value{background:#222228;border:1px solid #303039;border-radius:16px;padding:15px;font-size:24px;font-weight:800}
+button{width:100%;min-height:50px;border-radius:15px;border:0;font-weight:800;font-size:15px;cursor:pointer}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.actions button{background:#25252b;color:#fff;border:1px solid #35353d}.play{margin-top:12px;background:linear-gradient(90deg,#8050ee,#a03ef1);color:white}
+.status{text-align:center;color:#aaaab3;font-size:13px;min-height:20px;margin-top:10px}
+@media(max-width:430px){main{margin:10px auto;padding:10px}.game{padding:14px}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main><div class="game">
+<div class="top"><div class="brand">🎁 Star Multiplier</div><div class="balance">⭐ <span id="balance">100</span></div></div>
+<div class="panel"><div class="history" id="history"></div><div class="bar"><div class="knob" id="knob"></div></div><div class="scale"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div></div>
+<div class="panel"><div class="grid">
+<div><div class="label">Multiplicateur</div><div class="value"><span id="mult">1.18</span>×</div></div>
+<div><div class="label">Higher</div><div class="value"><span id="higher">17.27</span> ↔</div></div>
+</div>
+<div style="margin-top:16px"><div class="label">Chance de gagner</div><div class="value"><span id="chance">84.75</span>%</div></div></div>
+<div class="actions"><button id="minus">−</button><button id="plus">+</button></div>
+<div class="panel"><div class="value" style="display:flex;justify-content:space-between;font-size:18px"><span>Mise de démonstration</span><span>⭐ <span id="stake">1</span></span></div>
+<button class="play" id="play">Lancer la partie démo</button><div class="status" id="status">Mode démo : aucun paiement réel.</div></div>
+</div></main>
+<script>
+const $=id=>document.getElementById(id);let mult=1.18,balance=100;
+function render(){const chance=Math.max(1,Math.min(99,100/mult));$('mult').textContent=mult.toFixed(2);$('chance').textContent=chance.toFixed(2);$('higher').textContent=(mult*14.64).toFixed(2);$('knob').style.left=chance+'%';$('balance').textContent=Math.floor(balance)}
+function history(x){const p=document.createElement('span');p.className='pill';p.textContent=x.toFixed(2);$('history').prepend(p);while($('history').children.length>6)$('history').lastChild.remove()}
+$('minus').onclick=()=>{mult=Math.max(1.01,mult-.1);render()}
+$('plus').onclick=()=>{mult=Math.min(20,mult+.1);render()}
+$('play').onclick=()=>{const roll=Math.random()*100,chance=100/mult;const win=roll<chance;if(win)balance+=mult-1;history(roll);$('status').textContent=win?'🎉 Résultat gagnant (démo)':'Résultat perdant (démo)';$('status').style.color=win?'#57ea8d':'#ff5571';render()}
+render();
+</script>
+</body>
+</html>
