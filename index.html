@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Star Multiplier — Demo</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:#0d0d10;color:#f5f5f7;font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:520px;margin:30px auto;padding:16px}
+.game{background:#111113;border:1px solid #29292f;border-radius:28px;padding:20px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.brand{font-weight:800;font-size:19px}
+.balance{background:#202025;border:1px solid #303039;border-radius:15px;padding:9px 13px;font-weight:800}
+.panel{background:#19191e;border:1px solid #28282f;border-radius:22px;padding:18px;margin-top:14px}
+.history{display:flex;gap:8px;overflow:hidden;margin-bottom:18px;min-height:32px}
+.pill{flex:0 0 auto;padding:7px 10px;border-radius:999px;font-weight:750;font-size:13px}
+.pill.w{background:#173f2a;color:#5bea8b}.pill.l{background:#421a24;color:#ff5571}
+
+/* Piste */
+.track{position:relative;padding:22px 0;touch-action:none;user-select:none;-webkit-user-select:none}
+.bar{height:30px;border-radius:20px;background:linear-gradient(90deg,#e72e55 var(--c,50%),#16b85a var(--c,50%))}
+.knob{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:46px;height:46px;border-radius:50%;background:#f5f5f7;border:7px solid #5550bd;cursor:grab;z-index:3;touch-action:none;box-shadow:0 0 0 0 rgba(85,80,189,.5)}
+.knob.drag{border-color:#8050ee;box-shadow:0 0 0 8px rgba(128,80,238,.25)}
+.ball{position:absolute;top:50%;left:0;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#ffd54a 55%,#f0a500);box-shadow:0 0 14px rgba(255,213,74,.8);z-index:2;opacity:0;pointer-events:none}
+.ball.on{opacity:1}
+.ball.blink{animation:ballBlink .6s steps(1) 1}
+@keyframes ballBlink{0%,40%,80%{opacity:1;transform:scale(1.5)}20%,60%,100%{opacity:.15;transform:scale(1)}}
+.panel.blinkW{animation:blinkW 1s ease-out 1}.panel.blinkL{animation:blinkL 1s ease-out 1}
+@keyframes blinkW{0%,100%{box-shadow:0 0 0 0 rgba(47,211,111,0)}20%,60%{box-shadow:0 0 30px 6px rgba(47,211,111,.8);border-color:#2fd36f}40%,80%{box-shadow:0 0 6px 0 rgba(47,211,111,.2)}}
+@keyframes blinkL{0%,100%{box-shadow:0 0 0 0 rgba(240,67,95,0)}20%,60%{box-shadow:0 0 30px 6px rgba(240,67,95,.8);border-color:#f0435f}40%,80%{box-shadow:0 0 6px 0 rgba(240,67,95,.2)}}
+.scale{display:flex;justify-content:space-between;color:#7d7d86;font-size:12px;margin-top:2px}
+
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.grid3 .value{font-size:17px;padding:11px 8px;text-align:center}.grid3 .label{font-size:12px;margin-bottom:6px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.label{color:#85858f;font-size:13px;margin-bottom:8px}
+.value{background:#222228;border:1px solid #303039;border-radius:16px;padding:15px;font-size:24px;font-weight:800}
+button{width:100%;min-height:50px;border-radius:15px;border:0;font-weight:800;font-size:15px;cursor:pointer;font-family:inherit}
+button:disabled{opacity:.5;cursor:default}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.actions button{background:#25252b;color:#fff;border:1px solid #35353d;font-size:22px}
+.stakes{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+.stakes button{min-height:42px;background:#25252b;color:#fff;border:1px solid #35353d;font-size:14px}
+.stakes button.sel{background:#3a2f66;border-color:#8050ee}
+.play{margin-top:12px;background:linear-gradient(90deg,#8050ee,#a03ef1);color:#fff}
+.balance{position:relative}
+.float{position:absolute;right:6px;top:100%;font-weight:900;font-size:18px;pointer-events:none;white-space:nowrap;z-index:5;animation:floatUp 1.6s ease-out forwards}
+.float.w{color:#57ea8d}.float.l{color:#ff5571}
+.pop{position:absolute;left:50%;top:-6px;transform:translateX(-50%);font-weight:900;font-size:30px;pointer-events:none;white-space:nowrap;z-index:6;text-shadow:0 2px 12px rgba(0,0,0,.7);animation:popUp 1.6s ease-out forwards}
+.pop.w{color:#57ea8d}.pop.l{color:#ff5571}
+@keyframes floatUp{0%{opacity:0;transform:translateY(0)}15%{opacity:1}100%{opacity:0;transform:translateY(-34px)}}
+@keyframes popUp{0%{opacity:0;transform:translate(-50%,10px) scale(.6)}20%{opacity:1;transform:translate(-50%,-6px) scale(1.15)}100%{opacity:0;transform:translate(-50%,-40px) scale(1)}}
+.status{text-align:center;color:#aaaab3;font-size:14px;min-height:20px;margin-top:10px;font-weight:700}
+@media(max-width:430px){main{margin:10px auto;padding:10px}.game{padding:14px}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main><div class="game">
+<div class="top"><div class="brand">🎁 Star Multiplier</div><div style="display:flex;gap:8px;align-items:center"><button id="snd" style="width:44px;min-height:40px;background:#202025;border:1px solid #303039;border-radius:15px;font-size:16px">🔊</button><div class="balance">⭐ <span id="balance">100</span></div></div></div>
+
+<div class="panel" style="padding-bottom:12px">
+  <div class="label" style="display:flex;justify-content:space-between;margin-bottom:4px"><span>Évolution des étoiles</span><span id="delta"></span></div>
+  <svg id="chart" viewBox="0 0 300 130" style="width:100%;height:130px;display:block"></svg>
+  <div class="track" id="track" style="padding:16px 0 8px">
+    <div class="bar" id="bar"></div>
+    <div class="ball" id="ball"></div>
+    <div class="knob" id="knob"></div>
+  </div>
+  <div class="scale"><span>−×100</span><span>×100</span></div>
+  <div class="history" id="history" style="margin:10px 0 0"></div>
+</div>
+
+<div class="panel" style="padding:14px">
+  <div class="stakes" id="stakes" style="margin-top:0">
+    <button data-s="1" class="sel">1 ⭐</button><button data-s="5">5 ⭐</button><button data-s="10">10 ⭐</button><button data-s="25">25 ⭐</button>
+  </div>
+  <button class="play" id="play">Lancer la partie démo</button>
+  <div class="status" id="status">Mode démo : aucun paiement réel.</div>
+</div>
+
+<div class="panel" style="padding:14px">
+  <div class="grid3">
+    <div><div class="label">Multiplicateur</div><div class="value"><span id="mult">2.00</span>×</div></div>
+    <div><div class="label">Gain</div><div class="value">⭐<span id="higher">2.00</span></div></div>
+    <div><div class="label">Chance</div><div class="value"><span id="chance">50.00</span>%</div></div>
+  </div>
+  <div class="actions"><button id="minus">−</button><button id="plus">+</button></div>
+</div>
+</div></main>
+
+<script>
+const $=id=>document.getElementById(id);
+let chance=50, balance=100, stake=1, busy=false, sound=true;
+const KEY='starmult_v1';
+function save(){try{localStorage.setItem(KEY,JSON.stringify({balance,stake,chance,sound,candles:candles.slice(-60)}))}catch(e){}}
+function load(){try{const d=JSON.parse(localStorage.getItem(KEY)||'null');if(!d)return;balance=+d.balance||100;stake=+d.stake||1;chance=+d.chance||50;sound=d.sound!==false;(d.candles||[]).forEach(k=>candles.push(k))}catch(e){}}
+function chime(){tone(880,.5,'sine',.12,0);tone(1320,.6,'sine',.07,.08);tone(1760,.7,'sine',.04,.16)}
+let actx;
+function tone(f,d,type,v,when,slide){if(!sound)return;try{actx=actx||new(window.AudioContext||window.webkitAudioContext)();const t=actx.currentTime+(when||0),o=actx.createOscillator(),g=actx.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(slide,t+d);g.gain.setValueAtTime(v||.15,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(actx.destination);o.start(t);o.stop(t+d+.02)}catch(e){}}
+function buzz(p,kind){try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}try{const h=window.Telegram&&Telegram.WebApp&&Telegram.WebApp.HapticFeedback;if(h)kind?h.notificationOccurred(kind):h.impactOccurred('light')}catch(e){}}
+const MIN=1, MAX=95;
+// Gain/perte fractionné selon l'endroit où la bille s'arrête : 0 au curseur, plein gain à droite (×mult), perte totale de la mise à gauche
+function netAt(p){const k=100-chance;return p>=k?stake*(mult()-1)*(p-k)/(100-k):-stake*(k-p)/k}
+const mult=()=>100/chance;
+
+const candles=[];   // {o,c,l,h} : une bougie par partie
+function drawChart(live){
+  const list=live?candles.concat([live]):candles.slice();
+  const vis=list.slice(-24);
+  const svg=$('chart'), W=svg.clientWidth||300, H=130, RM=46;
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  const last=vis.length?vis[vis.length-1].c:100;
+  let lo=Math.min(100,...vis.map(k=>k.l)), hi=Math.max(100,...vis.map(k=>k.h));
+  const pad=Math.max((hi-lo)*.18,2); lo-=pad; hi+=pad;
+  const PW=W-RM, Y=v=>H-6-(v-lo)/(hi-lo)*(H-12), slot=PW/24, bw=Math.max(3,slot*.62);
+  let out='';
+  for(let i=0;i<4;i++){
+    const v=lo+(hi-lo)*(i+.5)/4, y=Y(v).toFixed(1);
+    out+=`<line x1="0" x2="${PW}" y1="${y}" y2="${y}" stroke="#25252d"/><text x="${W-4}" y="${(+y+4).toFixed(1)}" text-anchor="end" fill="#6d6d78" font-size="10">${v.toFixed(0)}</text>`;
+  }
+  const y100=Y(100).toFixed(1);
+  out+=`<line x1="0" x2="${PW}" y1="${y100}" y2="${y100}" stroke="#4a4a56" stroke-dasharray="3 4"/>`;
+  vis.forEach((k,i)=>{
+    const up=k.c>=k.o, col=up?'#2fd36f':'#f0435f', x=i*slot+slot/2;
+    const yo=Y(k.o), yc=Y(k.c), top=Math.min(yo,yc), h=Math.max(2,Math.abs(yo-yc));
+    out+=`<line x1="${x}" x2="${x}" y1="${Y(k.h).toFixed(1)}" y2="${Y(k.l).toFixed(1)}" stroke="${col}" stroke-width="1.5"/>`+
+         `<rect x="${(x-bw/2).toFixed(1)}" y="${top.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="1.5" fill="${col}"/>`;
+  });
+  const col=last>=100?'#2fd36f':'#f0435f', yl=Y(last).toFixed(1);
+  out+=`<line x1="0" x2="${PW}" y1="${yl}" y2="${yl}" stroke="${col}" stroke-dasharray="2 3" opacity=".8"/>`+
+       `<rect x="${PW+2}" y="${(+yl-9).toFixed(1)}" width="${RM-4}" height="18" rx="4" fill="${col}"/>`+
+       `<text x="${PW+2+(RM-4)/2}" y="${(+yl+4).toFixed(1)}" text-anchor="middle" fill="#0d0d10" font-size="11" font-weight="800">${(Math.round(last*10)/10)}</text>`;
+  svg.innerHTML=out;
+  const d=last-100;
+  $('delta').textContent=(d>=0?'+':'−')+Math.abs(d).toFixed(2).replace(/\.00$/,'')+' ⭐';
+  $('delta').style.color=col;
+}
+function render(){
+  $('mult').textContent=mult().toFixed(2);
+  $('chance').textContent=chance.toFixed(2);
+  $('higher').textContent=(stake*mult()).toFixed(2);
+  $('knob').style.left=(100-chance)+'%';
+  $('bar').style.setProperty('--c',(100-chance)+'%');
+  $('balance').textContent=(Math.round(balance*100)/100).toString();
+  if(!busy)save();
+}
+function setChance(v){chance=Math.max(MIN,Math.min(MAX,v));render()}
+
+/* Glisser le curseur au doigt / souris */
+const track=$('track'),knob=$('knob');
+let dragging=false;
+function moveTo(clientX){
+  const r=$('bar').getBoundingClientRect();
+  setChance(100-(clientX-r.left)/r.width*100);
+}
+track.addEventListener('pointerdown',e=>{
+  if(busy)return;
+  dragging=true;knob.classList.add('drag');
+  track.setPointerCapture(e.pointerId);
+  moveTo(e.clientX);e.preventDefault();
+});
+track.addEventListener('pointermove',e=>{if(dragging)moveTo(e.clientX)});
+const stop=()=>{dragging=false;knob.classList.remove('drag')};
+track.addEventListener('pointerup',stop);
+track.addEventListener('pointercancel',stop);
+
+/* Boutons − / + (multiplicateur) */
+$('minus').onclick=()=>{if(!busy)setChance(100/Math.max(1.01,mult()-.1))};
+$('plus').onclick=()=>{if(!busy)setChance(100/Math.min(100,mult()+.1))};
+
+/* Mise */
+document.querySelectorAll('#stakes button').forEach(b=>b.onclick=()=>{
+  if(busy)return;
+  stake=+b.dataset.s;
+  document.querySelectorAll('#stakes button').forEach(x=>x.classList.toggle('sel',x===b));
+  render();
+});
+
+/* Historique */
+function history(roll,win){
+  const p=document.createElement('span');
+  p.className='pill '+(win?'w':'l');p.textContent=roll.toFixed(2);
+  $('history').prepend(p);
+  while($('history').children.length>6)$('history').lastChild.remove();
+}
+
+/* Lancer : la bille traverse la barre de gauche à droite */
+function setBusy(b){
+  busy=b;
+  ['play','minus','plus'].forEach(i=>$(i).disabled=b);
+  document.querySelectorAll('#stakes button').forEach(x=>x.disabled=b);
+}
+$('play').onclick=()=>{
+  if(busy)return;
+  if(balance<1){balance=100;render()}
+  if(stake>balance){$('status').textContent='Pas assez d’étoiles.';$('status').style.color='#ff5571';return}
+  const open=balance;
+  buzz(15);
+  balance-=stake;render();
+  setBusy(true);
+  $('status').textContent='…';$('status').style.color='#aaaab3';
+  const roll=Math.random()*100, net=netAt(roll), win=net>0;
+  const ball=$('ball'), W=$('bar').getBoundingClientRect().width;
+  ball.classList.add('on');
+  const D1=170, D2=160, dur=D1+D2, t0=performance.now();   // 1) balayage gauche→droite  2) retour souple jusqu'au résultat
+  const inOut=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+  const easeOutBack=t=>{const c=1.2;return 1+(c+1)*Math.pow(t-1,3)+c*Math.pow(t-1,2)};
+  (function step(now){
+    const el=now-t0, t=Math.min(1,el/dur);
+    let p;                                   // position en % de la barre
+    if(el<D1) p=inOut(el/D1)*100;
+    else p=Math.max(0,100+(roll-100)*easeOutBack(Math.min(1,(el-D1)/D2)));
+    const x=p/100*W;
+    ball.style.left=x+'px';
+    const inWin=p>100-chance, liveV=open+netAt(p);
+    drawChart({o:open,c:liveV,l:Math.min(open-stake,liveV),h:Math.max(open,liveV)});
+    ball.style.filter=(p>100-chance)?'hue-rotate(0deg)':'hue-rotate(-40deg)';
+    if(t<1)return requestAnimationFrame(step);
+    balance+=stake+net;
+    history(roll,win);
+    $('status').textContent=win?`🎉 Gagné ! +${net.toFixed(2)} ⭐`:`Perdu −${(-net).toFixed(2)} ⭐`;
+    $('status').style.color=win?'#57ea8d':'#ff5571';
+    render();candles.push({o:open,c:balance,l:Math.min(open-stake,balance),h:Math.max(open,balance)});drawChart();
+    const amt=net;
+    if(win){chime();buzz([40,30,80],'success')}else{buzz(120,'error')}
+    const pn=track.closest('.panel');pn.classList.remove('blinkW','blinkL');void pn.offsetWidth;pn.classList.add(win?'blinkW':'blinkL');setTimeout(()=>pn.classList.remove('blinkW','blinkL'),1100);
+    ball.classList.remove('blink');void ball.offsetWidth;ball.classList.add('blink');
+    const txt=(amt>0?'+':'−')+Math.abs(amt).toFixed(2).replace(/\.00$/,'')+' ⭐';
+    const cls=win?'w':'l';
+    const pop=document.createElement('div');pop.className='pop '+cls;pop.textContent=txt;
+    track.appendChild(pop);setTimeout(()=>pop.remove(),1700);
+    const fl=document.createElement('div');fl.className='float '+cls;fl.textContent=txt;
+    document.querySelector('.balance').appendChild(fl);setTimeout(()=>fl.remove(),1700);
+    setTimeout(()=>{ball.classList.remove('on');ball.style.left='0px';setBusy(false)},700);
+  })(t0);
+};
+load();
+document.querySelectorAll('#stakes button').forEach(x=>x.classList.toggle('sel',+x.dataset.s===stake));
+$('snd').textContent=sound?'🔊':'🔇';
+$('snd').onclick=()=>{sound=!sound;$('snd').textContent=sound?'🔊':'🔇';save();tone(600,.1)};
+render();drawChart();
+</script>
+</body>
+</html>
